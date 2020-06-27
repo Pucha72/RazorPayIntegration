@@ -1,0 +1,133 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h1>RAZOR PAY INTEGRATION</h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="col-lg-6"></div>
+        <div class="col-lg-6">
+            <h2>Checkout & Pay</h2>
+            <table width="100%" cellpadding="10" cellspacing="10">
+                <thead>
+                    <tr>
+                        <th>Sl No</th>
+                        <th>Product Name</th>
+                        <th>Qty</th>
+                        <th>Amount</th>
+                    </tr>
+
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>1</th>
+                        <th>Tata Tea (1KG)</th>
+                        <th>2 * 140.00</th>
+                        <th>280.00</th>
+                    </tr>
+                    <tr>
+                        <th>2</th>
+                        <th>Tata Salt (1KG)</th>
+                        <th>3 * 30.00</th>
+                        <th>90.00</th>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="3">Total </th>
+                        <th>370.00</th>
+                    </tr>
+                    <tr>
+                        <th colspan="2"></th>
+                        <th colspan="2">  <button id="rzp-button1" class="btn btn-success pull-right">Pay</button></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style type="text/css">
+    th, td {
+        padding: 10px;
+    }
+
+    thead th {
+        border-bottom: dashed 0.5px;
+    }
+
+    tfoot th {
+        border-top: dashed 0.5px;
+    }
+</style>
+
+<script>
+
+
+    $(document).ready(function () {
+        //$("#rzp-button1").attr("disabled", "disabled");
+        $("#rzp-button1").attr("title", "Create razorpay account & pass key id & secret code in code behind. Click here to see payment modal");
+        var test = { id:"order_F7f4OuRNZzgbDl", amount : 100 };
+        var options;
+        Pay(test);
+        create_order();
+
+
+        function create_order() {
+            $.ajax({
+                type: "POST",
+                url: "Home/CreateOrder",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    debugger
+                    Pay(response);
+                    $("#rzp-button1").attr("title", "Razor payment gateway integrated succesfully. Click here to pay.");
+                    $("#rzp-button1").removeAttr("disabled");
+                    $("#rzp-button1").removeClass("hide");
+                },
+                failure: function (response) {
+                    alert(response.d);
+                }
+            });
+        }
+
+        function Pay(response) {
+            debugger
+            options = {
+                "key": "rzp_test_s6bXRjDMHgwnX5", // Enter the Key ID generated from the Dashboard
+                "amount": response.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+                "currency": "INR",
+                "name": "Testing",
+                "description": "Test Transaction",
+                "image": "https://d1kkg0o175tdyf.cloudfront.net/large/s_779cdc4d4758-2019-07-20-18-35-22-000830.jpg",
+                "order_id": response.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+                "handler": function (response) {
+                    alert(response.razorpay_payment_id);
+                    alert(response.razorpay_order_id);
+                    alert(response.razorpay_signature)
+                },
+                "prefill": {
+                    "name": "Pushparaj D",
+                    "email": "dpushparaj72@gmail.com",
+                    "contact": "9999999999"
+                },
+                "notes": {
+                    "address": "Razorpay Corporate Office"
+                },
+                "theme": {
+                    "color": "#F37254"
+                }
+            };
+            var rzp1 = new Razorpay(options);
+            document.getElementById('rzp-button1').onclick = function (e) {
+                rzp1.open();
+                e.preventDefault();
+            }
+        }
+    });
+</script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
